@@ -30,14 +30,13 @@ def save_data(items):
             f.write(item + "\n")
 
 # ==========================================
-# 2. 앱 화면 및 스타일 구성 (모바일 가로 배치 종결판)
+# 2. 앱 화면 및 스타일 구성 (초밀착 정밀 타격)
 # ==========================================
 st.set_page_config(page_title="우리집 장바구니", page_icon="🍳")
 
-# [v1.1.0] 모바일 가로 정렬 강제 고정 및 깔끔한 UI를 위한 CSS
 st.markdown("""
     <style>
-    /* 1. 모바일에서 모든 가로 블록(st.columns)의 줄바꿈을 원천 차단 */
+    /* 1. 모바일 가로 정렬 강제 고정 및 간격 제거 */
     div[data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
@@ -46,55 +45,60 @@ st.markdown("""
         gap: 0px !important;
     }
     
-    /* 2. 각 컬럼의 너비를 강제로 고정하여 겹침 방지 */
+    /* 2. 체크박스 컬럼: 폭을 극도로 제한 (25px) */
     div[data-testid="column"]:nth-child(1) {
-        flex: 0 0 35px !important;
-        min-width: 35px !important;
+        flex: 0 0 25px !important;
+        min-width: 25px !important;
+        padding: 0px !important;
     }
+    
+    /* 3. 이름 컬럼: 음수 마진으로 체크박스에 '딱' 붙임 */
     div[data-testid="column"]:nth-child(2) {
         flex: 1 1 auto !important;
-        padding-left: 5px !important;
+        margin-left: -12px !important; /* 체크박스 쪽으로 강하게 당김 */
+        padding-left: 0px !important;
     }
+    
+    /* 4. 삭제 버튼 컬럼: 오른쪽 정렬 */
     div[data-testid="column"]:nth-child(3) {
-        flex: 0 0 45px !important;
-        min-width: 45px !important;
+        flex: 0 0 40px !important;
+        min-width: 40px !important;
         text-align: right !important;
     }
 
-    /* 3. 체크박스 라벨 공간 삭제 및 여백 최소화 */
+    /* 5. 체크박스 자체 여백 완전 제거 */
     .stCheckbox { margin-bottom: 0px !important; }
-    .stCheckbox label { padding: 0 !important; }
+    .stCheckbox label { padding: 0 !important; margin: 0 !important; }
     
-    /* 4. 리스트 아이템 디자인 (카드 느낌) */
+    /* 6. 리스트 아이템 디자인 (카드 형태 유지) */
     .shopping-item {
         background-color: #ffffff;
         border-radius: 8px;
-        padding: 8px;
-        margin-bottom: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        padding: 6px 10px;
+        margin-bottom: 6px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         border: 1px solid #f0f2f6;
     }
 
-    /* 5. 삭제 버튼(쓰레기통) 투명 스타일 - 다른 버튼에 영향 안 미치도록 */
+    /* 7. 삭제 버튼 전용 스타일 */
     button[key*="del_"] {
         background-color: transparent !important;
         border: none !important;
         padding: 0 !important;
         font-size: 20px !important;
-        color: #ff4b4b !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
 # 버전 정보 표시
-st.caption("v1.1.0 - 모바일 가로 정렬 종결 버전")
+st.caption("v1.1.1 - 체크박스-이름 초밀착 모드")
 
 st.title("👨‍👩‍👦‍👦 아들둘집 장보기")
 
 if 'list' not in st.session_state:
     st.session_state['list'] = load_data()
 
-# --- 물품 추가 섹션 (입력창 3줄 배치) ---
+# --- 물품 추가 섹션 (3줄 배치) ---
 with st.container(border=True):
     st.markdown("##### ➕ 물품 추가")
     who = st.selectbox("누가 사나요?", ["아빠", "엄마", "큰아들", "작은아들"])
@@ -108,12 +112,12 @@ with st.container(border=True):
 
 st.divider()
 
-# --- 장바구니 목록 (카드형 가로 한 줄 정렬) ---
+# --- 장바구니 목록 (초밀착 가로 정렬) ---
 st.subheader("🛒 사야 할 목록")
 selected_ingredients = []
 
 if not st.session_state['list']:
-    st.info("장바구니가 비어 있습니다. 물품을 추가해 보세요!")
+    st.info("장바구니가 비어 있습니다.")
 else:
     for i, full_item in enumerate(st.session_state['list']):
         if ":" in full_item:
@@ -123,16 +127,16 @@ else:
             name = full_item
             emoji = FAMILY_EMOJI["기본"]
 
-        # 전체 행을 카드 스타일로 감쌈
+        # 카드 스타일 안에 가로 3단 구성
         st.markdown('<div class="shopping-item">', unsafe_allow_html=True)
-        c1, c2, c3 = st.columns([0.1, 0.8, 0.1])
+        c1, c2, c3 = st.columns([0.05, 0.85, 0.1])
         
         with c1:
             is_selected = st.checkbox("", key=f"check_{i}", label_visibility="collapsed")
             if is_selected:
                 selected_ingredients.append(name)
         with c2:
-            st.markdown(f"<div style='margin-top:4px; font-size:16px;'>{emoji} <b>{name}</b></div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='margin-top:2px; font-size:16px;'>{emoji} <b>{name}</b></div>", unsafe_allow_html=True)
         with c3:
             if st.button("🗑️", key=f"del_{i}"):
                 st.session_state['list'].pop(i)
@@ -154,12 +158,12 @@ if st.button("🍳 선택한 재료로 레시피 추천받기", type="primary", 
     if not selected_ingredients:
         st.warning("목록에서 재료를 선택(체크)한 후 버튼을 눌러주세요!")
     else:
-        with st.spinner('아들들이 좋아할 메뉴를 고민 중입니다...'):
+        with st.spinner('아들들이 좋아할 메뉴 추천 중...'):
             try:
                 ingredients_str = ", ".join(selected_ingredients)
                 prompt = f"{ingredients_str}를 주재료로 하여 아들 둘을 둔 가족이 먹기 좋은 요리와 레시피를 한국어로 자세히 알려줘."
                 response = client.models.generate_content(model="gemini-1.5-flash", contents=prompt)
-                st.success("짜잔! 추천 레시피입니다.")
+                st.success("레시피가 도착했습니다!")
                 st.markdown(response.text)
             except Exception as e:
-                st.error(f"오류가 발생했어요: {str(e)}")
+                st.error(f"오류 발생: {str(e)}")
