@@ -77,7 +77,7 @@ if st.button("선택한 재료로 레시피 추천받기", type="primary", use_c
         with st.spinner('레시피를 생성 중입니다...'):
             try:
                 ingredients_str = ", ".join(selected_ingredients)
-                prompt = f"{ingredients_str}를 주재료로 한 요리 2~3개와 레시피를 한국어로 알려줘."
+                prompt = f"{ingredients_str}를 주재료로 한 요리 2~3개와 레시피를 한국어로 알려줘.".encode('utf-8').decode('utf-8')
                 
                 # 최신 API 호출 방식
                 response = client.models.generate_content(
