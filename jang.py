@@ -5,7 +5,7 @@ from google import genai  # 최신 라이브러리로 변경
 # ==========================================
 # 1. 설정 및 데이터 관리
 # ==========================================
-API_KEY = "AIzaSyCWmjHFTXiG5mn4gXXM7EAef9pBecK5ZXg"
+API_KEY = st.secrets["GEMINI_API_KEY"]
 # 최신 클라이언트 설정 방식
 client = genai.Client(api_key=API_KEY)
 
@@ -32,7 +32,7 @@ if 'list' not in st.session_state:
     st.session_state['list'] = load_data()
 
 # --- 물품 추가 ---
-with st.expander("➕ 필요한 물품을 입력하세요", expanded=True):
+with st.expander("➕ 필요한 물품을 입력하세요!", expanded=True):
     col1, col2 = st.columns([3, 1])
     with col1:
         new_item = st.text_input("재료 입력", label_visibility="collapsed")
