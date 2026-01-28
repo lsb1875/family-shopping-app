@@ -80,7 +80,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 st.caption("v1.1.6 - [체크박스+이름 | 삭제] 밀착형")
-st.title("👨‍👩‍👦‍👦 아들둘집 장보기")
+st.title("👨‍👩‍👦‍👦 우리집 장보기")
 
 if 'list' not in st.session_state:
     st.session_state['list'] = load_data()
@@ -146,7 +146,7 @@ if st.button("🍳 선택한 재료로 레시피 추천받기", type="primary", 
             try:
                 ingredients_str = ", ".join(selected_ingredients)
                 prompt = f"{ingredients_str}를 주재료로 하여 아들 둘을 둔 가족이 먹기 좋은 요리와 레시피를 한국어로 알려줘."
-                response = client.models.generate_content(model="gemini-1.5-flash", contents=prompt)
+                response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
                 st.success("추천 레시피 도착!")
                 st.markdown(response.text)
             except Exception as e:
