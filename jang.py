@@ -5,12 +5,13 @@ from google import genai
 # ==========================================
 # 1. 설정 및 데이터 관리
 # ==========================================
+# Streamlit Secrets에서 API 키를 가져옵니다.
 API_KEY = st.secrets["GEMINI_API_KEY"]
 client = genai.Client(api_key=API_KEY)
 
 DATA_FILE = "shopping_list.txt"
 
-# 가족 이모지 설정
+# 아들 둘 가족 구성원 이모지 설정
 FAMILY_EMOJI = {
     "아빠": "👨",
     "엄마": "👩",
@@ -35,38 +36,18 @@ def save_data(items):
 # ==========================================
 st.set_page_config(page_title="우리집 장바구니", page_icon="🍳")
 
-# 모바일 가로 정렬 강제 고정 및 여백 제거를 위한 CSS
+# 리스트 아이템만 한 줄에 밀착되도록 하는 CSS
 st.markdown("""
     <style>
-    /* 1. 모바일에서 컬럼이 세로로 쌓이는 것을 강제로 방지 */
-    div[data-testid="stHorizontalBlock"] {
-        display: flex !important;
+    /* 리스트 영역의 컬럼들이 모바일에서도 가로로 유지되게 함 */
+    [data-testid="column"] {
         flex-direction: row !important;
-        flex-wrap: nowrap !important;
         align-items: center !important;
     }
-    div[data-testid="column"] {
-        min-width: 0px !important;
-        flex-grow: 1 !important;
-    }
-    
-    /* 2. 요소 간 간격 좁히기 */
     .stCheckbox { margin-bottom: 0px; }
-    .stButton button { 
-        padding: 2px 5px !important; 
-        height: auto !important; 
-        font-size: 16px !important;
-        border: 1px solid #ddd !important;
-    }
-    
-    /* 3. 텍스트가 줄바꿈되지 않고 한 줄에 보이게 설정 */
-    .item-text {
-        font-size: 15px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        margin-top: 5px;
-    }
+    .item-text { font-size: 16px; margin-top: 5px; white-space: nowrap; }
+    /* 삭제 버튼 스타일 */
+    .stButton button { padding: 2px 5px !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -75,23 +56,21 @@ st.title("👨‍👩‍👦‍👦 우리집 장보기")
 if 'list' not in st.session_state:
     st.session_state['list'] = load_data()
 
-# --- 물품 추가 섹션 (강제 가로 배치) ---
-with st.container():
-    c1, c2, c3 = st.columns([1, 1.8, 0.8])
-    with c1:
-        who = st.selectbox("누구", ["아빠", "엄마", "큰아들", "작은아들"], label_visibility="collapsed")
-    with c2:
-        new_item = st.text_input("물품명", placeholder="재료 입력", label_visibility="collapsed")
-    with c3:
-        if st.button("추가", use_container_width=True):
-            if new_item:
-                st.session_state['list'].append(f"{who}:{new_item}")
-                save_data(st.session_state['list'])
-                st.rerun()
+# --- 물품 추가 섹션 (요청하신 세 줄 배치) ---
+with st.expander("➕ 누가 무엇을 살까요?", expanded=True):
+    # 각 요소를 세로로 나열하여 입력을 편하게 만듭니다.
+    who = st.selectbox("누가 사나요?", ["아빠", "엄마", "큰아들", "작은아들"])
+    new_item = st.text_input("무엇을 사나요?", placeholder="예: 우유, 사과, 과자...")
+    
+    if st.button("장바구니에 추가", use_container_width=True, type="secondary"):
+        if new_item:
+            st.session_state['list'].append(f"{who}:{new_item}")
+            save_data(st.session_state['list'])
+            st.rerun()
 
 st.divider()
 
-# --- 장바구니 목록 (초밀착 한 줄 정렬) ---
+# --- 장바구니 목록 (한 줄 정렬 유지) ---
 st.subheader("🛒 사야 할 목록")
 selected_ingredients = []
 
@@ -106,7 +85,7 @@ else:
             name = full_item
             emoji = FAMILY_EMOJI["기본"]
 
-        # [체크박스 | 이름 | 삭제]를 가로로 꽉 차게 배치
+        # [체크박스 | 이름 | 삭제] 비율 조정
         cols = st.columns([0.15, 0.7, 0.15])
         
         with cols[0]:
@@ -123,7 +102,7 @@ else:
                 save_data(st.session_state['list'])
                 st.rerun()
 
-    # --- 목록 관리 버튼 ---
+    # 목록 관리 버튼
     st.write("")
     if st.button("🧹 전체 목록 삭제", use_container_width=True):
         st.session_state['list'] = []
@@ -132,24 +111,18 @@ else:
 
 st.divider()
 
-# --- AI 요리 추천 섹션 ---
+# --- AI 요리 추천 섹션 (화면 하단 배치) ---
 st.subheader("👨‍🍳 제미나이 레시피")
-if st.button("🍳 선택한 재료로 요리 추천받기", type="primary", use_container_width=True):
+if st.button("🍳 선택한 재료로 레시피 추천받기", type="primary", use_container_width=True):
     if not selected_ingredients:
         st.error("재료를 선택해주세요!")
     else:
-        with st.spinner('레시피를 생각하고 있어요...'):
+        with st.spinner('아들들이 좋아할 메뉴 추천 중...'):
             try:
                 ingredients_str = ", ".join(selected_ingredients)
-                prompt = f"{ingredients_str}를 주재료로 하여 아들 둘을 둔 가족이 먹기 좋은 요리와 레시피를 한국어로 자세히 알려줘."
-                
-                # 안정적인 gemini-2.5-flash 모델 사용
-                response = client.models.generate_content(
-                    model="gemini-1.5-flash", 
-                    contents=prompt
-                )
-                
-                st.success("맛있는 추천이 도착했습니다!")
+                prompt = f"{ingredients_str}를 주재료로 하여 아들 둘을 둔 가족이 먹기 좋은 요리와 레시피를 한국어로 알려줘."
+                response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
+                st.success("추천 레시피가 도착했습니다!")
                 st.markdown(response.text)
             except Exception as e:
                 st.error(f"오류 발생: {str(e)}")
