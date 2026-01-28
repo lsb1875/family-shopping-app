@@ -30,67 +30,62 @@ def save_data(items):
             f.write(item + "\n")
 
 # ==========================================
-# 2. 앱 화면 및 스타일 구성 (CSS 정밀 타격)
+# 2. 앱 화면 및 스타일 구성 (가로 정렬 필살기)
 # ==========================================
 st.set_page_config(page_title="우리집 장바구니", page_icon="🍳")
 
 st.markdown("""
     <style>
-    /* 1. 입력 칸(expander 내부)은 세로로 나오게 기본값 유지 */
-    
-    /* 2. 장바구니 리스트 영역만 강제로 한 줄 배치 */
-    div.list-item-container > div[data-testid="stHorizontalBlock"] {
+    /* 1. 리스트 아이템 전용 컨테이너: 무조건 가로로 나열 (flex-direction: row) */
+    .row-container {
         display: flex !important;
         flex-direction: row !important;
-        flex-wrap: nowrap !important; /* 줄바꿈 절대 금지 */
         align-items: center !important;
-        gap: 0px !important;
-    }
-    
-    /* 3. 컬럼 비율 강제 고정 (모바일 무시) */
-    div.list-item-container div[data-testid="column"]:nth-of-type(1) {
-        flex: 0 0 40px !important; /* 체크박스 공간 */
-        min-width: 40px !important;
-    }
-    div.list-item-container div[data-testid="column"]:nth-of-type(2) {
-        flex: 1 1 auto !important; /* 이름 공간 (나머지 전부) */
-        padding-left: 0px !important;
-    }
-    div.list-item-container div[data-testid="column"]:nth-of-type(3) {
-        flex: 0 0 50px !important; /* 삭제 버튼 공간 */
-        min-width: 50px !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        padding: 5px 0px;
+        border-bottom: 1px solid #f0f2f6;
     }
 
-    /* 4. 리스트 내 삭제 버튼(🗑️)만 투명하게 배경 제거 */
-    div.list-item-container button {
+    /* 2. 각 요소별 간격 조정 */
+    .checkbox-col { flex: 0 0 30px !important; }
+    .text-col { flex: 1 1 auto !important; padding-left: 5px; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .btn-col { flex: 0 0 40px !important; text-align: right; }
+
+    /* 3. 체크박스 기본 여백 제거 */
+    .stCheckbox { margin: 0px !important; padding: 0px !important; line-height: 1 !important; }
+    
+    /* 4. 리스트 내 삭제 버튼 전용 스타일 (쓰레기통 아이콘만) */
+    .del-button button {
         background: transparent !important;
         border: none !important;
         padding: 0px !important;
         font-size: 20px !important;
-        color: inherit !important;
+        width: 35px !important;
+        height: 35px !important;
     }
 
-    /* 5. 텍스트와 체크박스 밀착 */
-    .stCheckbox { margin-right: -10px !important; }
-    .item-text { font-size: 16px; white-space: nowrap; margin-top: 3px; }
+    /* 5. 레시피 추천 등 메인 버튼은 글자가 잘 보이게 유지 */
+    .stButton > button {
+        white-space: nowrap !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
 # 버전 표시
-st.caption("v1.0.8 - 목록 강제 한 줄 고정 적용") 
+st.caption("v1.0.9 - 리스트 가로 배치 고정 (Flex 모드)") 
 
 st.title("👨‍👩‍👦‍👦 아들둘집 장보기")
 
 if 'list' not in st.session_state:
     st.session_state['list'] = load_data()
 
-# --- 물품 추가 섹션 (사용자 요청: 세 줄 배치) ---
+# --- 물품 추가 섹션 (사용자 요청: 세 줄 배치 유지) ---
 with st.expander("➕ 누가 무엇을 살까요?", expanded=True):
-    # 컬럼 없이 나열하면 자동으로 세 줄이 됩니다.
     who = st.selectbox("누구 사나요?", ["아빠", "엄마", "큰아들", "작은아들"])
     new_item = st.text_input("무엇을 사나요?", placeholder="재료 입력...")
     
-    if st.button("장바구니에 추가", use_container_width=True, key="main_add_btn"):
+    if st.button("장바구니에 추가", use_container_width=True, key="add_btn_main"):
         if new_item:
             st.session_state['list'].append(f"{who}:{new_item}")
             save_data(st.session_state['list'])
@@ -98,7 +93,7 @@ with st.expander("➕ 누가 무엇을 살까요?", expanded=True):
 
 st.divider()
 
-# --- 장바구니 목록 (초밀착 한 줄 정렬) ---
+# --- 장바구니 목록 (강제 가로 한 줄 배치) ---
 st.subheader("🛒 사야 할 목록")
 selected_ingredients = []
 
@@ -113,24 +108,26 @@ else:
             name = full_item
             emoji = FAMILY_EMOJI["기본"]
 
-        # CSS가 이 div 안의 컬럼만 잡아내도록 클래스 부여
-        st.markdown(f'<div class="list-item-container">', unsafe_allow_html=True)
+        # 표준 st.columns 대신 HTML 구조를 사용하여 강제로 가로 배치
+        # 하지만 Streamlit 위젯(체크박스, 버튼)은 columns 안에 있어야 하므로
+        # columns를 쓰되 CSS로 해당 컬럼들을 강제로 묶어버립니다.
         
-        c1, c2, c3 = st.columns([0.1, 0.8, 0.1])
+        st.markdown('<div class="row-container">', unsafe_allow_html=True)
+        col1, col2, col3 = st.columns([0.1, 0.8, 0.1])
         
-        with c1:
+        with col1:
             is_selected = st.checkbox("", key=f"check_{i}", label_visibility="collapsed")
             if is_selected:
                 selected_ingredients.append(name)
-        with c2:
-            st.markdown(f"<div class='item-text'>{emoji} {name}</div>", unsafe_allow_html=True)
-        with c3:
-            # 삭제 버튼 (아이콘만 표시)
+        with col2:
+            st.markdown(f"<div class='text-col'>{emoji} {name}</div>", unsafe_allow_html=True)
+        with col3:
+            st.markdown('<div class="del-button">', unsafe_allow_html=True)
             if st.button("🗑️", key=f"del_{i}"):
                 st.session_state['list'].pop(i)
                 save_data(st.session_state['list'])
                 st.rerun()
-        
+            st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     st.write("")
@@ -143,12 +140,11 @@ st.divider()
 
 # --- AI 요리 추천 섹션 ---
 st.subheader("👨‍🍳 제미나이 레시피")
-# 이제 이 버튼의 글자가 정상적으로 보입니다.
 if st.button("🍳 선택한 재료로 레시피 추천받기", type="primary", use_container_width=True, key="recipe_btn"):
     if not selected_ingredients:
         st.error("재료를 선택해주세요!")
     else:
-        with st.spinner('아들들이 좋아할 레시피 찾는 중...'):
+        with st.spinner('레시피 찾는 중...'):
             try:
                 ingredients_str = ", ".join(selected_ingredients)
                 prompt = f"{ingredients_str}를 주재료로 하여 아들 둘을 둔 가족이 먹기 좋은 요리와 레시피를 한국어로 알려줘."
