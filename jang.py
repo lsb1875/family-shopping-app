@@ -97,7 +97,7 @@ if st.button("👨‍🍳 제미나이의 레시피 제안", type="primary", use
             try:
                 ingredients_str = ", ".join(selected_ingredients)
                 prompt = f"{ingredients_str}를 주재료로 하여 아들 둘을 둔 가족이 먹기 좋은 요리와 레시피를 한국어로 알려줘."
-                response = client.models.generate_content(model="gemini-1.5-flash", contents=prompt)
+                response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
                 st.success("레시피가 도착했습니다!")
                 st.markdown(response.text)
             except Exception as e:
