@@ -88,7 +88,7 @@ if 'list' not in st.session_state:
 # --- 1. 물품 추가 (세 줄 배치) ---
 with st.container(border=True):
     st.markdown("##### ➕ 물품 추가")
-    who = st.selectbox("누구 사나요?", ["아빠", "엄마", "큰아들", "작은아들"])
+    who = st.selectbox("누가 필요하나요?", ["아빠", "엄마", "큰아들", "작은아들"])
     new_item = st.text_input("무엇을 사나요?", placeholder="재료 입력...")
     if st.button("장바구니에 담기", use_container_width=True, type="secondary"):
         if new_item:
