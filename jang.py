@@ -150,9 +150,39 @@ if st.button("🍳 레시피 추천받기", type="primary", use_container_width=
     else:
         with st.spinner('메뉴 추천 중...'):
             try:
+                # 1. 오늘 날짜와 월 정보를 가져옵니다.
+                now = datetime.now()
+                month = now.month
+                today_str = now.strftime("%Y년 %m월 %d일")
+                
+                # 2. 월별로 계절 텍스트를 정해줍니다.
+                if 3 <= month <= 5:
+                    season = "파릇파릇한 봄"
+                    weather_desc = "봄에 어울리는 상큼한 요리"
+                elif 6 <= month <= 8:
+                    season = "무더운 여름"
+                    weather_desc = "여름에 어울리는 요리"
+                elif 9 <= month <= 11:
+                    season = "선선한 가을"
+                    weather_desc = "가을과 어울리는 든든한 요리"
+                else:
+                    season = "추운 겨울"
+                    weather_desc = "추운 겨울에 먹으면 좋을 요리"
+
                 ingredients_str = ", ".join(selected_ingredients)
-                prompt = f"{ingredients_str}를 주재료로 하여, 한국의 지금 계절, 날씨를 날씨정보사이트에서 확인하고, 지금의 계절과 날씨에 어울리고 먹기 좋은 요리와 레시피를 한국어로 알려줘."
-                response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
-                st.success("추천 레시피 도착!"); st.markdown(response.text)
+                
+                # 3. AI에게 날짜와 판단된 계절 정보를 함께 전달합니다.
+                prompt = f"""
+                오늘 날짜는 {today_str}입니다. 한국은 지금 {season}입니다.
+                {weather_desc}가 필요한 시기입니다.
+
+                선택된 재료들({ingredients_str})을 주재료로 하여,
+                {season} 날씨에 아들 둘을 둔 가족이 
+                가장 맛있게 먹을 수 있는 요리와 레시피를 한국어로 알려줘.
+                """
+                
+                response = client.models.generate_content(model="gemini-1.5-flash", contents=prompt)
+                st.success(f"오늘({today_str}, {season})에 딱 맞는 레시피 도착!")
+                st.markdown(response.text)
             except Exception as e:
                 st.error(f"오류: {str(e)}")
