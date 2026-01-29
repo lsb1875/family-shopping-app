@@ -158,16 +158,16 @@ if st.button("🍳 레시피 추천받기", type="primary", use_container_width=
                 
                 # 2. 월별로 계절 텍스트를 정해줍니다.
                 if 3 <= month <= 5:
-                    season = "파릇파릇한 봄"
+                    season = "봄"
                     weather_desc = "봄에 어울리는 상큼한 요리"
                 elif 6 <= month <= 8:
-                    season = "무더운 여름"
+                    season = "여름"
                     weather_desc = "여름에 어울리는 요리"
                 elif 9 <= month <= 11:
-                    season = "선선한 가을"
+                    season = "가을"
                     weather_desc = "가을과 어울리는 든든한 요리"
                 else:
-                    season = "추운 겨울"
+                    season = "겨울"
                     weather_desc = "추운 겨울에 먹으면 좋을 요리"
 
                 ingredients_str = ", ".join(selected_ingredients)
@@ -178,7 +178,7 @@ if st.button("🍳 레시피 추천받기", type="primary", use_container_width=
                 {weather_desc}가 필요한 시기입니다.
 
                 선택된 재료들({ingredients_str})을 주재료로 하여,
-                {season} 날씨에 아들 둘을 둔 가족이 
+                {season} 날씨에 가족들이 
                 가장 맛있게 먹을 수 있는 요리와 레시피를 한국어로 알려줘.
                 """
                 
