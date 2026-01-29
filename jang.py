@@ -79,7 +79,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.caption("v1.1.6 - [체크박스+이름 | 삭제] 밀착형")
+st.caption("우리집 장보기 v1.1.6 ")
 st.title("👨‍👩‍👦‍👦 우리집 장보기")
 
 if 'list' not in st.session_state:
