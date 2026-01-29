@@ -35,9 +35,7 @@ st.markdown(f"""
         <meta name="mobile-web-app-capable" content="yes">
     </head>
     """, unsafe_allow_html=True)
-    layout="centered"
-)
-
+    
 st.markdown("""
     <style>
     /* 리스트 항목 카드 스타일 */
