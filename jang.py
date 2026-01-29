@@ -16,7 +16,7 @@ DATA_FILE = "shopping_list.txt"
 # --- 이메일 설정 (아빠 Gmail 정보) ---
 SENDER_EMAIL = "lsb1875@gmail.com"  # 아빠 Gmail 주소로 수정
 RECEIVER_EMAIL = "lsb1875@gmail.com" # 알림 받을 아빠 이메일 주소
-GMAIL_PW = st.secrets.get("우리집 장보기", "") # Secrets에 등록할 앱 비밀번호
+GMAIL_PW = st.secrets.get("우리집장보기", "") # Secrets에 등록할 앱 비밀번호
 
 FAMILY_EMOJI = {"아빠": "👨", "엄마": "👩", "큰아들": "👦", "작은아들": "👶", "기본": "🛒"}
 
@@ -144,10 +144,10 @@ if st.button("🍳 레시피 추천받기", type="primary", use_container_width=
     if not selected_ingredients:
         st.warning("재료를 체크한 후 눌러주세요!")
     else:
-        with st.spinner(' 메뉴 추천 중...'):
+        with st.spinner(' 메뉴 추천 가져오는 중...'):
             try:
                 ingredients_str = ", ".join(selected_ingredients)
-                prompt = f"{ingredients_str}를 주재료로 하여 한국의 지금 계절, 날씨,시간대를 감안하여 먹기 좋은 요리와 레시피를 한국어로 알려줘."
+                prompt = f"{ingredients_str}를 주재료로 하여 한국의 지금 계절, 날씨를 확인해서 날씨와계절에 어울리고 먹기 좋은 요리와 레시피를 한국어로 알려줘."
                 response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
                 st.success("추천 레시피 도착!")
                 st.markdown(response.text)
