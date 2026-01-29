@@ -1,8 +1,6 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import os
 from google import genai
-import streamlit.components.v1 as components
 
 # ==========================================
 # 1. 설정 및 데이터 관리
@@ -25,51 +23,69 @@ def save_data(items):
             f.write(item + "\n")
 
 # ==========================================
-# 2. 홈 화면 아이콘 "강제" 주입 (가장 강력한 방법)
+# 2. 앱 화면 및 스타일 구성 (밀착형 레이아웃)
 # ==========================================
-st.set_page_config(page_title="우리집 장바구니", page_icon="🛒")
+st.set_page_config(page_title="우리집 장바구니", page_icon="🍳")
 
-# 브라우저의 Head 태그를 직접 수정하여 아이콘 설정을 강제로 덮어씌웁니다.
-components.html("""
-<script>
-    const head = window.parent.document.head;
-    
-    // 1. 기존 스트림릿 기본 앱 설정 삭제
-    const oldManifest = head.querySelector('link[rel="manifest"]');
-    if (oldManifest) oldManifest.remove();
-    
-    // 2. 새로운 아이콘 설정 주입
-    const iconLink = window.parent.document.createElement('link');
-    iconLink.rel = 'apple-touch-icon'; // 아이폰용
-    iconLink.href = 'https://emojicdn.elk.sh/🛒?size=192';
-    head.appendChild(iconLink);
-    
-    const favLink = window.parent.document.createElement('link');
-    favLink.rel = 'icon'; // 안드로이드/PC용
-    favLink.href = 'https://emojicdn.elk.sh/🛒?size=192';
-    head.appendChild(favLink);
-</script>
-""", height=0)
-
-# --- 이하 기존 스타일 및 리스트 코드 ---
 st.markdown("""
     <style>
-    div[data-testid="stHorizontalBlock"] { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; align-items: center !important; justify-content: flex-start !important; gap: 0px !important; }
-    .item-container { background-color: #ffffff; border-radius: 12px; padding: 6px 10px; margin-bottom: 6px; border: 1px solid #eef0f2; }
-    div[data-testid="column"]:nth-child(1) { flex: 0 1 auto !important; min-width: 0px !important; }
-    div[data-testid="column"]:nth-child(2) { flex: 0 0 40px !important; min-width: 40px !important; padding-left: 5px !important; }
-    .stCheckbox label p { font-size: 16px !important; font-weight: 500 !important; white-space: nowrap !important; }
-    button[key*="del_"] { background: transparent !important; border: none !important; font-size: 18px !important; padding: 0px !important; color: #ff4b4b !important; }
+    /* 리스트 항목 카드 스타일 */
+    .item-container {
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 6px 10px;
+        margin-bottom: 6px;
+        border: 1px solid #eef0f2;
+    }
+    
+    /* 가로 배치 강제 고정 및 요소 밀착 */
+    div[data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: flex-start !important; /* 모든 요소를 왼쪽으로 밀착 */
+        gap: 0px !important; /* 기본 간격 제거 */
+    }
+    
+    /* 체크박스+이름 컬럼: 필요한 만큼만 너비 차지 */
+    div[data-testid="column"]:nth-child(1) {
+        flex: 0 1 auto !important;
+        min-width: 0px !important;
+    }
+    
+    /* 삭제 버튼 컬럼: 이름 바로 옆에 붙음 */
+    div[data-testid="column"]:nth-child(2) {
+        flex: 0 0 40px !important;
+        min-width: 40px !important;
+        padding-left: 5px !important; /* 이름과 약간의 거리만 유지 */
+    }
+
+    /* 체크박스 라벨 설정 */
+    .stCheckbox label p {
+        font-size: 16px !important;
+        font-weight: 500 !important;
+        white-space: nowrap !important; /* 이름 줄바꿈 방지 */
+    }
+
+    /* 삭제 버튼(쓰레기통) 디자인 */
+    button[key*="del_"] {
+        background: transparent !important;
+        border: none !important;
+        font-size: 18px !important;
+        padding: 0px !important;
+        color: #ff4b4b !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-st.caption("v1.1.7 - 홈 화면 아이콘 강제 주입 시스템")
+st.caption("v1.1.6 - [체크박스+이름 | 삭제] 밀착형")
 st.title("👨‍👩‍👦‍👦 우리집 장보기")
 
 if 'list' not in st.session_state:
     st.session_state['list'] = load_data()
 
-# ➕ 물품 추가 섹션
+# --- 1. 물품 추가 (세 줄 배치) ---
 with st.container(border=True):
     st.markdown("##### ➕ 물품 추가")
     who = st.selectbox("누가 필요하나요?", ["아빠", "엄마", "큰아들", "작은아들"])
@@ -82,8 +98,8 @@ with st.container(border=True):
 
 st.divider()
 
-# 🛒 장바구니 목록
-st.subheader("🛒 사야할 것들")
+# --- 2. 장바구니 목록 (체크+이름 | 삭제 순서) ---
+st.subheader("🛒 목록")
 selected_ingredients = []
 
 if not st.session_state['list']:
@@ -92,34 +108,46 @@ else:
     for i, full_item in enumerate(st.session_state['list']):
         user, name = full_item.split(":", 1) if ":" in full_item else ("기본", full_item)
         emoji = FAMILY_EMOJI.get(user, FAMILY_EMOJI["기본"])
+
         st.markdown('<div class="item-container">', unsafe_allow_html=True)
+        # 컬럼 비율을 조정하여 삭제 버튼을 이름 바로 옆으로 당김
         c1, c2 = st.columns([0.85, 0.15])
+        
         with c1:
+            # 체크박스와 이름을 하나로 묶음
             is_selected = st.checkbox(f"{emoji} {name}", key=f"check_{i}")
-            if is_selected: selected_ingredients.append(name)
+            if is_selected:
+                selected_ingredients.append(name)
+        
         with c2:
+            # 삭제 버튼이 오른쪽 끝이 아닌 이름 영역 직후에 배치됨
             if st.button("🗑️", key=f"del_{i}"):
                 st.session_state['list'].pop(i)
                 save_data(st.session_state['list'])
                 st.rerun()
+        
         st.markdown('</div>', unsafe_allow_html=True)
-    
+
     st.write("")
     if st.button("🧹 전체 목록 삭제", use_container_width=True):
-        st.session_state['list'] = []; save_data([]); st.rerun()
+        st.session_state['list'] = []
+        save_data([])
+        st.rerun()
 
 st.divider()
 
-# 👨‍🍳 AI 레시피 추천
+# --- 3. AI 요리 추천 ---
+st.subheader("👨‍🍳 제미나이 추천")
 if st.button("🍳 선택한 재료로 레시피 추천받기", type="primary", use_container_width=True):
     if not selected_ingredients:
-        st.warning("재료를 체크한 후 눌러주세요!")
+        st.warning("목록에서 재료를 체크한 후 눌러주세요!")
     else:
-        with st.spinner('메뉴 추천 중...'):
+        with st.spinner('아들들이 좋아할 메뉴 추천 중...'):
             try:
                 ingredients_str = ", ".join(selected_ingredients)
                 prompt = f"{ingredients_str}를 주재료로 하여 아들 둘을 둔 가족이 먹기 좋은 요리와 레시피를 한국어로 알려줘."
                 response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
-                st.success("레시피 도착!"); st.markdown(response.text)
+                st.success("추천 레시피 도착!")
+                st.markdown(response.text)
             except Exception as e:
                 st.error(f"오류: {str(e)}")
