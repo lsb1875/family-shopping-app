@@ -25,9 +25,13 @@ def save_data(items):
 # ==========================================
 # 2. 앱 화면 및 스타일 구성 (밀착형 레이아웃)
 # ==========================================
-st.set_page_config(
-    page_title="우리집 장바구니", 
-    page_icon="🛒", # 여기서 아이콘을 변경합니다 (🍳, 🛒, 🛍️ 등)
+st.markdown(f"""
+    <head>
+        <link rel="apple-touch-icon" href="https://emojicdn.elk.sh/🛒">
+        <link rel="icon" type="image/png" href="https://emojicdn.elk.sh/🛒">
+        <meta name="mobile-web-app-capable" content="yes">
+    </head>
+    """, unsafe_allow_html=True)
     layout="centered"
 )
 
