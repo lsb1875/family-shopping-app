@@ -127,16 +127,17 @@ else:
             st.session_state.confirm_delete = True
             st.rerun()
     else:
-        st.warning("⚠️ 모든 목록이 삭제됩니다. 계속하시겠습니까?")
-        col_yes, col_no = st.columns(2)
-        with col_yes:
-            if st.button("🔥 네, 삭제합니다", use_container_width=True, type="primary"):
+        with st.container(border=True):
+            st.warning("⚠️ 모든 목록이 삭제됩니다. 계속하시겠습니까?")
+            
+            # [수정] 버튼을 위아래로 나열하여 모바일에서 잘림 방지
+            if st.button("🔥 네, 전체 삭제합니다", use_container_width=True, type="primary"):
                 st.session_state['list'] = []
                 save_data([])
                 st.session_state.confirm_delete = False
                 st.rerun()
-        with col_no:
-            if st.button("❌ 취소", use_container_width=True):
+                
+            if st.button("❌ 아니오, 취소합니다", use_container_width=True):
                 st.session_state.confirm_delete = False
                 st.rerun()
 
