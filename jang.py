@@ -81,7 +81,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.caption("v1.2.0 - 아빠 전용 이메일 알림 모드")
+st.caption("우리집 장보기 v1.2.0 ")
 st.title("👨‍👩‍👦‍👦 우리집 장보기")
 
 if 'list' not in st.session_state:
@@ -147,7 +147,7 @@ if st.button("🍳 레시피 추천받기", type="primary", use_container_width=
         with st.spinner(' 메뉴 추천 중...'):
             try:
                 ingredients_str = ", ".join(selected_ingredients)
-                prompt = f"{ingredients_str}를 주재료로 하여 지금의 계절, 날씨,시간대를 감안하여 먹기 좋은 요리와 레시피를 한국어로 알려줘."
+                prompt = f"{ingredients_str}를 주재료로 하여 한국의 지금 계절, 날씨,시간대를 감안하여 먹기 좋은 요리와 레시피를 한국어로 알려줘."
                 response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
                 st.success("추천 레시피 도착!")
                 st.markdown(response.text)
