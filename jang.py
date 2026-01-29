@@ -181,7 +181,7 @@ if st.button("🍳 레시피 추천받기", type="primary", use_container_width=
                 가장 맛있게 먹을 수 있는 요리와 레시피를 한국어로 알려줘.
                 """
                 
-                response = client.models.generate_content(model="gemini-1.5-flash", contents=prompt)
+                response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
                 st.success(f"오늘({today_str}, {season})에 딱 맞는 레시피 도착!")
                 st.markdown(response.text)
             except Exception as e:
