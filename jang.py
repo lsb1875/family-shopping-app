@@ -74,7 +74,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.caption("v1.2.2 - 전체 삭제 확인 기능 추가")
+st.caption("우리집 장보기 v1.2.2")
 st.title("👨‍👩‍👦‍👦 우리집 장보기")
 
 if 'list' not in st.session_state:
