@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import os
 from google import genai
 import streamlit.components.v1 as components
@@ -28,55 +29,27 @@ def save_data(items):
 # ==========================================
 st.set_page_config(page_title="우리집 장바구니", page_icon="🛒")
 
-# 자바스크립트를 이용해 브라우저의 아이콘 설정을 완전히 덮어씌웁니다.
-icon_url = "https://emojicdn.elk.sh/🛒?size=192"
-app_name = "가족 장바구니"
-
-components.html(f"""
-    <script>
-        const head = window.parent.document.head;
-        
-        // 1. 기존의 manifest(앱 설정) 파일 연결 해제
-        const oldManifest = head.querySelector('link[rel="manifest"]');
-        if (oldManifest) oldManifest.remove();
-        
-        // 2. 새로운 앱 설정(Manifest) 생성 및 주입 (안드로이드/크롬용)
-        const manifest = {{
-            "name": "{app_name}",
-            "short_name": "{app_name}",
-            "icons": [{{ "src": "{icon_url}", "sizes": "192x192", "type": "image/png" }}],
-            "start_url": ".",
-            "display": "standalone",
-            "theme_color": "#ffffff",
-            "background_color": "#ffffff"
-        }};
-        const stringManifest = JSON.stringify(manifest);
-        const blob = new Blob([stringManifest], {{type: 'application/json'}});
-        const manifestURL = URL.createObjectURL(blob);
-        
-        const newManifest = window.parent.document.createElement('link');
-        newManifest.rel = 'manifest';
-        newManifest.href = manifestURL;
-        head.appendChild(newManifest);
-        
-        // 3. iOS 홈 화면 아이콘 강제 교체 (아이폰용)
-        const oldAppleIcon = head.querySelector('link[rel="apple-touch-icon"]');
-        if (oldAppleIcon) oldAppleIcon.remove();
-        
-        const newAppleIcon = window.parent.document.createElement('link');
-        newAppleIcon.rel = 'apple-touch-icon';
-        newAppleIcon.href = "{icon_url}";
-        head.appendChild(newAppleIcon);
-
-        // 4. 즐겨찾기 아이콘(favicon) 교체
-        const oldIcon = head.querySelector('link[rel="icon"]');
-        if (oldIcon) oldIcon.remove();
-        const newIcon = window.parent.document.createElement('link');
-        newIcon.rel = 'icon';
-        newIcon.href = "{icon_url}";
-        head.appendChild(newIcon);
-    </script>
-    """, height=0)
+# 브라우저의 Head 태그를 직접 수정하여 아이콘 설정을 강제로 덮어씌웁니다.
+components.html("""
+<script>
+    const head = window.parent.document.head;
+    
+    // 1. 기존 스트림릿 기본 앱 설정 삭제
+    const oldManifest = head.querySelector('link[rel="manifest"]');
+    if (oldManifest) oldManifest.remove();
+    
+    // 2. 새로운 아이콘 설정 주입
+    const iconLink = window.parent.document.createElement('link');
+    iconLink.rel = 'apple-touch-icon'; // 아이폰용
+    iconLink.href = 'https://emojicdn.elk.sh/🛒?size=192';
+    head.appendChild(iconLink);
+    
+    const favLink = window.parent.document.createElement('link');
+    favLink.rel = 'icon'; // 안드로이드/PC용
+    favLink.href = 'https://emojicdn.elk.sh/🛒?size=192';
+    head.appendChild(favLink);
+</script>
+""", height=0)
 
 # --- 이하 기존 스타일 및 리스트 코드 ---
 st.markdown("""
