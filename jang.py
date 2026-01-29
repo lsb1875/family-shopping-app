@@ -16,7 +16,7 @@ DATA_FILE = "shopping_list.txt"
 # --- 이메일 설정 (아빠 Gmail 정보) ---
 SENDER_EMAIL = "lsb1875@gmail.com"  # 아빠 Gmail 주소로 수정
 RECEIVER_EMAIL = "lsb1875@gmail.com" # 알림 받을 아빠 이메일 주소
-GMAIL_PW = st.secrets.get("bcnv evvp lame aynq", "") # Secrets에 등록할 앱 비밀번호
+GMAIL_PW = st.secrets.get("우리집 장보기", "") # Secrets에 등록할 앱 비밀번호
 
 FAMILY_EMOJI = {"아빠": "👨", "엄마": "👩", "큰아들": "👦", "작은아들": "👶", "기본": "🛒"}
 
