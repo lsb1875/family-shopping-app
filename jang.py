@@ -1,50 +1,29 @@
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
-import smtplib
-from email.mime.text import MIMEText
 from datetime import datetime
 from google import genai
-import streamlit.components.v1 as components
 
-# ==========================================
-# 1. 설정 및 구글 시트 연결
-# ==========================================
-API_KEY = st.secrets["GEMINI_API_KEY"]
-client = genai.Client(api_key=API_KEY)
-
-# 구글 시트 연결 (가장 안정적인 호출 방식)
+# 1. 연결 설정
 conn = st.connection("gsheets", type=GSheetsConnection)
-
-SENDER_EMAIL = "lsb1875@gmail.com"  
-RECEIVER_EMAIL = "lsb1875@gmail.com" 
-GMAIL_PW = st.secrets.get("GMAIL_APP_PASSWORD", "") 
-
-FAMILY_EMOJI = {"아빠": "👨", "엄마": "👩", "큰아들": "👦", "작은아들": "👶", "기본": "🛒"}
 
 def load_data():
     try:
-        # 캐시 없이 즉시 로드
+        # 서비스 계정 권한으로 데이터 읽기
         df = conn.read(ttl=0)
-        if df is not None and not df.empty:
-            return df['items'].dropna().tolist()
-        return []
-    except Exception as e:
-        return []
+        return df['items'].dropna().tolist() if df is not None else []
+    except: return []
 
 def save_data(data_list):
     try:
-        # 데이터프레임 생성
         df = pd.DataFrame({"items": data_list})
-        # 구글 시트 업데이트 시도
+        # 이제 서비스 계정 권한이 있어 업데이트가 가능합니다!
         conn.update(data=df)
         st.cache_data.clear()
         return True
     except Exception as e:
-        # [수정] 저장이 안 될 때 화면에 에러를 띄웁니다.
-        st.error(f"❌ 구글 시트 저장 실패! 권한 설정을 확인하세요: {e}")
+        st.error(f"저장 실패: {e}")
         return False
-
 # ==========================================
 # 2. UI 및 로직
 # ==========================================
