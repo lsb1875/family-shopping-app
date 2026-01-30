@@ -13,7 +13,7 @@ import streamlit.components.v1 as components
 API_KEY = st.secrets["GEMINI_API_KEY"]
 client = genai.Client(api_key=API_KEY)
 
-# [수정] 구글 시트 연결 (공유 설정이 '편집자'여야 합니다)
+# 구글 시트 연결
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 SENDER_EMAIL = "lsb1875@gmail.com"  
@@ -24,23 +24,22 @@ FAMILY_EMOJI = {"아빠": "👨", "엄마": "👩", "큰아들": "👦", "작은
 
 def load_data():
     try:
-        # 데이터 읽기
-        df = conn.read(ttl="5s")
+        # [수정] ttl=0으로 설정하여 항상 최신 데이터를 시트에서 직접 가져옵니다.
+        df = conn.read(ttl=0)
         if df is not None and not df.empty:
             return df['items'].dropna().tolist()
         return []
     except Exception as e:
-        st.error(f"데이터 로드 중 오류: {e}")
         return []
 
 def save_data(data_list):
     try:
-        # [수정] 데이터 업데이트 방식 안정화
         df = pd.DataFrame({"items": data_list})
         conn.update(data=df)
-        st.cache_data.clear() # 캐시를 비워 즉시 반영되게 함
+        # [수정] 저장 직후 캐시를 완전히 비워서 다음 load_data가 최신을 읽게 합니다.
+        st.cache_data.clear()
     except Exception as e:
-        st.error(f"저장 실패! 구글 시트가 '편집자' 권한으로 공유되었는지 확인하세요. 에러: {e}")
+        st.error(f"저장 실패: {e}")
 
 def send_email_notification(who, item):
     if not GMAIL_PW: return 
@@ -54,37 +53,39 @@ def send_email_notification(who, item):
     except: pass
 
 # ==========================================
-# 2. UI 스타일 및 로직
+# 2. UI 및 로직
 # ==========================================
 st.set_page_config(page_title="우리집 장바구니", page_icon="🛒")
 
-# 홈 화면 아이콘 강제 설정
+# 아이콘 설정
 components.html(f"""<script>const head = window.parent.document.head; const icon_url = "https://emojicdn.elk.sh/🛒?size=192"; const oldAppleIcon = head.querySelector('link[rel="apple-touch-icon"]'); if (oldAppleIcon) oldAppleIcon.remove(); const newAppleIcon = window.parent.document.createElement('link'); newAppleIcon.rel = 'apple-touch-icon'; newAppleIcon.href = icon_url; head.appendChild(newAppleIcon);</script>""", height=0)
 
 st.markdown("""<style>div[data-testid="stHorizontalBlock"] { display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: flex-start !important; gap: 0px !important; } .item-container { background-color: #ffffff; border-radius: 12px; padding: 6px 10px; margin-bottom: 6px; border: 1px solid #eef0f2; } div[data-testid="column"]:nth-child(1) { flex: 0 1 auto !important; } div[data-testid="column"]:nth-child(2) { flex: 0 0 40px !important; padding-left: 5px !important; } .stCheckbox label p { font-size: 16px !important; font-weight: 500 !important; } button[key*="del_"] { background: transparent !important; border: none !important; font-size: 18px !important; color: #ff4b4b !important; }</style>""", unsafe_allow_html=True)
 
 st.title("👨‍👩‍👦‍👦 무적의 장바구니")
-st.caption("v1.3.1 - 데이터 저장 오류 수정 버전")
+st.caption("v1.3.2 - 실시간 동기화 강화 버전")
 
-# 데이터 불러오기
+# 데이터 로드
 shopping_list = load_data()
 
-# ➕ 물품 추가
 with st.container(border=True):
     st.markdown("##### ➕ 물품 추가")
     who = st.selectbox("누가 필요나요?", ["아빠", "엄마", "큰아들", "작은아들"])
-    new_item = st.text_input("무엇을 살까요?", placeholder="재료 입력...")
+    new_item = st.text_input("무엇을 살까요?", placeholder="재료 입력...", key="input_box")
+    
     if st.button("장바구니에 담기", use_container_width=True):
         if new_item:
+            # 1. 기존 목록에 추가
             shopping_list.append(f"{who}:{new_item}")
+            # 2. 구글 시트에 즉시 저장
             save_data(shopping_list)
+            # 3. 아빠에게 이메일 알림
             send_email_notification(who, new_item)
-            st.toast(f"✅ {new_item} 저장 완료!")
+            # 4. 화면 강제 갱신
             st.rerun()
 
 st.divider()
 
-# 🛒 목록 표시
 selected_ingredients = []
 if not shopping_list:
     st.info("장바구니가 비어 있습니다.")
