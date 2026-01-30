@@ -85,7 +85,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 st.caption("우리집 장보기 v1.4.0 (GS-API)")
-st.title("👨‍👩‍👦‍👦 무적의 장바구니")
+st.title("👨‍👩‍👦‍👦 우리집 장바구니")
 
 # 데이터 로드
 shopping_list = load_data()
@@ -152,8 +152,8 @@ else:
 st.divider()
 
 # --- 5. AI 요리 추천 (계절/날씨 인식) ---
-st.subheader("👨‍🍳 제미나이 추천")
-if st.button("🍳 레시피 추천받기", type="primary", use_container_width=True, key="recipe_btn"):
+st.subheader("👨‍🍳 제미나이 추천 요리")
+if st.button("🍳 레시피 추천 받기", type="primary", use_container_width=True, key="recipe_btn"):
     if not selected_ingredients:
         st.warning("재료를 체크한 후 눌러주세요!")
     else:
@@ -169,9 +169,9 @@ if st.button("🍳 레시피 추천받기", type="primary", use_container_width=
                 else: season = "겨울"
 
                 ingredients_str = ", ".join(selected_ingredients)
-                prompt = f"오늘은 {today_str}이고 한국은 {season}이야. 재료({ingredients_str})로 아들둘 가족용 레시피 추천해줘."
+                prompt = f"오늘은 {today_str}이고 한국은 {season}이야. 재료({ingredients_str})로 계절과 날씨에 맞는 레시피 추천해줘."
                 
-                response = client.models.generate_content(model="gemini-1.5-flash", contents=prompt)
+                response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
                 st.success(f"오늘({today_str}, {season}) 추천 레시피!")
                 st.markdown(response.text)
             except Exception as e:
