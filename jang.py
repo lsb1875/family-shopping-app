@@ -4,27 +4,43 @@ import pandas as pd
 from datetime import datetime
 from google import genai
 
-# 1. 연결 설정
+# ==========================================
+# 1. 설정 및 연결
+# ==========================================
+# [수정] 연결 방식을 더 명시적으로 설정합니다.
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 def load_data():
     try:
-        # 서비스 계정 권한으로 데이터 읽기
+        # 최신 데이터를 읽어옵니다.
         df = conn.read(ttl=0)
         return df['items'].dropna().tolist() if df is not None else []
-    except: return []
+    except Exception as e:
+        st.error(f"데이터 읽기 실패: {e}")
+        return []
 
 def save_data(data_list):
     try:
         df = pd.DataFrame({"items": data_list})
-        # 이제 서비스 계정 권한이 있어 업데이트가 가능합니다!
+        # [핵심] 이 부분에서 '편집자' 권한이 없으면 에러가 납니다.
         conn.update(data=df)
         st.cache_data.clear()
         return True
     except Exception as e:
-        st.error(f"저장 실패: {e}")
+        # 어떤 구체적인 권한 문제인지 화면에 표시합니다.
+        st.error(f"⚠️ 저장 실패! (공유 설정 확인 필요): {e}")
         return False
-# ==========================================
+
+# ... (중략: 기존 UI 및 추가 로직 동일) ...
+
+# ➕ 물품 추가 버튼 로직
+if st.button("장바구니에 담기", use_container_width=True):
+    if new_item:
+        current_list = load_data() # 현재 시트 상태 확인
+        current_list.append(f"{who}:{new_item}")
+        if save_data(current_list):
+            st.toast("✅ 구글 시트에 안전하게 저장되었습니다!")
+            st.rerun()# ==========================================
 # 2. UI 및 로직
 # ==========================================
 st.set_page_config(page_title="우리집 장바구니", page_icon="🛒")
