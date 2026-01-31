@@ -153,7 +153,7 @@ st.divider()
 
 # --- 5. AI 요리 추천 (계절/날씨 인식) ---
 st.subheader("👨‍🍳 제미나이 추천 요리")
-if st.button("🍳 레시피 추천 받기", type="primary", use_container_width=True, key="recipe_btn"):
+if st.button("🍳선택한 재료로 레시피 추천 받기", type="primary", use_container_width=True, key="recipe_btn"):
     if not selected_ingredients:
         st.warning("재료를 체크한 후 눌러주세요!")
     else:
